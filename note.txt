@@ -1,0 +1,21 @@
+ const selectTheme = (e) => {
+    // if (activeTheme) {
+    //   activeTheme.classList.remove("activeTheme");
+    // }
+
+    document
+      .querySelectorAll(".themeSelector span")
+      .forEach((span) => span.classList.remove("activeTheme"));
+
+    e.target.classList.add("activeTheme");
+    // setActiveTheme(e.target);
+  };
+
+    const selectTheme = (e) => {
+    if (activeTheme) {
+      activeTheme.classList.remove("activeTheme");
+    }
+
+    e.target.classList.add("activeTheme");
+    setActiveTheme(e.target);
+  };

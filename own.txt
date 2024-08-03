@@ -1,0 +1,214 @@
+import React, { useEffect, useState } from "react";
+import AddTask from "./components/AddTask";
+import Header from "./components/Header";
+import ShowTask from "./components/ShowTask";
+
+const App = () => {
+  const [tasklist, setTasklist] = useState([]);
+  const [updateTask, setUpdateTask] = useState(null);
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem("tasks");
+    const storedTasksInObj = JSON.parse(storedTasks);
+
+    storedTasks && setTasklist(storedTasksInObj); // UI update
+  }, []);
+
+  return (
+    <div className="App container mx-auto px-[260px]">
+      <Header />
+
+      <AddTask
+        setTasklist={setTasklist}
+        tasklist={tasklist}
+        updateTask={updateTask}
+        setUpdateTask={setUpdateTask}
+      />
+
+      <ShowTask
+        tasklist={tasklist}
+        setTasklist={setTasklist}
+        updateTask={updateTask}
+        setUpdateTask={setUpdateTask}
+      />
+    </div>
+  );
+};
+
+export default App;
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+import React from "react";
+import DeleteIcon from "../svg/deleteIcon";
+import EditIcon from "../svg/editIcon";
+
+const ShowTask = ({ tasklist, setTasklist, updateTask, setUpdateTask }) => {
+  const handleClearTask = () => {
+    setTasklist([]); // UI update
+
+    localStorage.removeItem("tasks");
+  };
+
+  const handleDelete = (id) => {
+    const remainingTasks = tasklist.filter((task) => task.id !== id);
+
+    const remainingTasksInJSON = JSON.stringify(remainingTasks);
+    localStorage.setItem("tasks", remainingTasksInJSON);
+
+    setTasklist(remainingTasks); // UI update
+  };
+
+  const handleEdit = (id) => {
+    const taskToUpdate = tasklist.find((task) => task.id === id);
+
+    setUpdateTask(taskToUpdate);
+  };
+
+  return (
+    <section
+      className="showTask p-5 rounded-lg"
+      style={{ boxShadow: "0 0 3px 0 rgba(0,0,0,0.3)" }}
+    >
+      <div className="head flex items-center justify-between pb-5 border-b-2 border-slate-200 mb-5">
+        <div className="flex items-center gap-3">
+          <span className="title font-Roboto font-semibold">Todo</span>
+          <span className="count bg-slate-300 h-6 w-5 rounded-full flex items-center justify-center">
+            {tasklist.length}
+          </span>
+        </div>
+
+        <button
+          onClick={handleClearTask}
+          className="clearAll bg-blue-600 px-4 py-2 text-white rounded-md active:bg-blue-800"
+        >
+          Clear All
+        </button>
+      </div>
+
+      <ul className="grid grid-cols-3 gap-7">
+        {tasklist.map((task) => (
+          <li
+            key={task.id}
+            className="flex items-start justify-between p-4 rounded-md border-s-blue-500 border-s-4 border border-slate-300"
+          >
+            <p className="flex flex-col">
+              <span className="name font-bold text-lg">{task.name}</span>
+              <span className="time text-sm text-gray-400 font-semibold">
+                {task.time}
+              </span>
+            </p>
+
+            <div className="icons flex items-center gap-1">
+              <span className="edit" onClick={() => handleEdit(task.id)}>
+                <EditIcon />
+              </span>
+
+              <span className="delete" onClick={() => handleDelete(task.id)}>
+                <DeleteIcon />
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+};
+
+export default ShowTask;
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+import React, { useEffect, useState } from "react";
+import { formatDate12HourTimezone } from "../utils/functions";
+
+const AddTask = ({ setTasklist, tasklist, updateTask, setUpdateTask }) => {
+  const [inputTask, setInputTask] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!updateTask) {
+      const newTask = {
+        id: Math.floor(Math.random() * 1000000),
+        name: inputTask,
+        time: formatDate12HourTimezone(),
+      };
+
+      if (inputTask !== "") {
+        const newTasks = [...tasklist, newTask];
+        setTasklist(newTasks);
+
+        const storedTasksInJSON = JSON.stringify(newTasks);
+        localStorage.setItem("tasks", storedTasksInJSON); // saving in local storage
+
+        setInputTask("");
+      }
+    } else {
+      const updatedTasks = tasklist.map((task) =>
+        task.id === updateTask.id
+          ? { ...task, name: inputTask, time: formatDate12HourTimezone() }
+          : task
+      );
+
+      const updatedTasksInJSON = JSON.stringify(updatedTasks);
+      localStorage.setItem("tasks", updatedTasksInJSON);
+
+      setTasklist(updatedTasks);
+      setUpdateTask(null); // clearing the task to be updated // switch back to Add from Update
+      setInputTask("");
+    }
+  };
+
+  useEffect(() => {
+    setInputTask(updateTask?.name);
+  }, [updateTask]);
+
+  return (
+    <section className="addTask flex justify-center my-10 ">
+      <form
+        style={{ boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.2)" }}
+        className="w-[450px] flex justify-between gap-3 p-5 rounded-sm"
+        onSubmit={handleSubmit}
+      >
+        <input
+          value={inputTask}
+          onChange={(e) => setInputTask(e.target.value)}
+          type="text"
+          placeholder="Add Task"
+          maxLength={25}
+          name="task"
+          autoComplete="off"
+          className="flex-grow p-2 border border-slate-200 rounded-sm focus:outline-none"
+        />
+
+        <button
+          type="submit"
+          className="bg-green-500 text-white px-7 rounded-md active:bg-green-600"
+        >
+          <span className="text-lg">{updateTask ? "Update" : "Add"}</span>
+        </button>
+      </form>
+    </section>
+  );
+};
+
+export default AddTask;
+
+
+
+
+======================================================================================================================================
+
+
+
+
