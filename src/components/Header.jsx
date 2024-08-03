@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Logo from "../assets/logo2.jpg";
 
 const Header = () => {
@@ -18,9 +18,28 @@ const Header = () => {
     setTheme(selectedTheme);
 
     document.body.classList.add(selectedTheme); // change background theme
+
+    localStorage.setItem("theme", JSON.stringify(selectedTheme));
   };
 
-  console.log(theme);
+  useEffect(() => {
+    const previousTheme = JSON.parse(localStorage.getItem("theme"));
+
+    if (previousTheme) {
+      setTheme(previousTheme);
+      document.body.classList.add(previousTheme);
+    }
+
+    // find the Element to add activeTheme class
+    const previousThemeElement = document.querySelector(
+      `[data-theme="${previousTheme}"]`
+    );
+
+    if (previousThemeElement) {
+      setActiveTheme(previousThemeElement);
+      previousThemeElement.classList.add("activeTheme");
+    }
+  }, []);
 
   return (
     <header className="mt-5 flex items-center justify-between shadow-md px-3 bg-white py-1 rounded">
@@ -73,4 +92,3 @@ const Header = () => {
 };
 
 export default Header;
-9;
